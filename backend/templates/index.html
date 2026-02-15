@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>RealEstateBuddy</title>
+    <style>
+        body {
+            font-family: Arial;
+            background: #f4f6f8;
+            margin: 40px;
+        }
+
+        h1 {
+            color: #2c3e50;
+        }
+
+        form {
+            margin-bottom: 30px;
+        }
+
+        input {
+            padding: 8px;
+            margin: 5px;
+        }
+
+        button {
+            padding: 8px 15px;
+            background: #3498db;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #2980b9;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        th, td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background: #3498db;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+<h1>🏠 RealEstateBuddy</h1>
+
+<h2>Add Property</h2>
+<form action="/add" method="post">
+    <input type="text" name="title" placeholder="Property Title" required>
+    <input type="text" name="location" placeholder="Location" required>
+    <input type="number" name="price" placeholder="Price" required>
+    <button type="submit">Add Property</button>
+</form>
+
+<h2>Available Properties</h2>
+
+<table>
+    <tr>
+        <th>ID</th>
+        <th>Title</th>
+        <th>Location</th>
+        <th>Price</th>
+    </tr>
+
+    {% for property in properties %}
+    <tr>
+        <td>{{ property.id }}</td>
+        <td>{{ property.title }}</td>
+        <td>{{ property.location }}</td>
+        <td>₹ {{ property.price }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+</body>
+</html>
+

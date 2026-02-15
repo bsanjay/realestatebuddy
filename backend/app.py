@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request
+from flask import Flask, render_template, request, redirect
 import mysql.connector
 import redis
 import os
@@ -10,13 +10,10 @@ app = Flask(__name__)
 DB_HOST = os.getenv("DB_HOST", "realestatebuddy-db")
 REDIS_HOST = os.getenv("REDIS_HOST", "realestatebuddy-redis")
 
-# Wait for MySQL to be ready
-time.sleep(10)
+time.sleep(5)
 
-# Redis connection
 r = redis.Redis(host=REDIS_HOST, port=6379, decode_responses=True)
 
-# DB connection
 def get_db_connection():
     return mysql.connector.connect(
         host=DB_HOST,
@@ -25,7 +22,6 @@ def get_db_connection():
         database="realestatebuddy"
     )
 
-# Create table
 def create_table():
     conn = get_db_connection()
     cur = conn.cursor()
@@ -43,42 +39,49 @@ def create_table():
 
 create_table()
 
-@app.route("/properties", methods=["GET"])
-def get_properties():
+@app.route("/")
+def home():
     cached = r.get("properties")
     if cached:
-        return jsonify(json.loads(cached))
+        properties = json.loads(cached)
+    else:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute("SELECT * FROM properties")
+        rows = cur.fetchall()
+        cur.close()
+        conn.close()
 
-    conn = get_db_connection()
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM properties")
-    rows = cur.fetchall()
-    cur.close()
-    conn.close()
+        properties = [
+            {"id": row[0], "title": row[1], "location": row[2], "price": row[3]}
+            for row in rows
+        ]
 
-    properties = [
-        {"id": row[0], "title": row[1], "location": row[2], "price": row[3]}
-        for row in rows
-    ]
+        r.set("properties", json.dumps(properties), ex=60)
 
-    r.set("properties", json.dumps(properties), ex=60)
-    return jsonify(properties)
+    return render_template("index.html", properties=properties)
 
-@app.route("/properties", methods=["POST"])
+
+@app.route("/add", methods=["POST"])
 def add_property():
-    data = request.json
+    title = request.form["title"]
+    location = request.form["location"]
+    price = request.form["price"]
+
     conn = get_db_connection()
     cur = conn.cursor()
     cur.execute(
         "INSERT INTO properties (title, location, price) VALUES (%s, %s, %s)",
-        (data["title"], data["location"], data["price"])
+        (title, location, price)
     )
     conn.commit()
     cur.close()
     conn.close()
 
     r.delete("properties")
-    return {"message": "Property added"}, 201
+    return redirect("/")
 
-app.run(host="0.0.0.0", port=5000)
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)
 
