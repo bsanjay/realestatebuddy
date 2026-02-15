@@ -1,0 +1,45 @@
+services:
+  realestatebuddy-frontend:
+    image: nginx:latest
+    container_name: realestatebuddy_frontend
+    ports:
+      - "8080:80"
+    volumes:
+      - ./frontend:/usr/share/nginx/html
+    depends_on:
+      - realestatebuddy-backend
+    restart: unless-stopped
+
+  realestatebuddy-backend:
+    build: ./backend
+    container_name: realestatebuddy_backend
+    ports:
+      - "5000:5000"
+    environment:
+      DB_HOST: realestatebuddy-db
+      REDIS_HOST: realestatebuddy-redis
+    depends_on:
+      - realestatebuddy-db
+      - realestatebuddy-redis
+    restart: unless-stopped
+
+  realestatebuddy-db:
+    image: mysql:8
+    container_name: realestatebuddy_mysql
+    environment:
+      MYSQL_DATABASE: realestatebuddy
+      MYSQL_USER: sanjay
+      MYSQL_PASSWORD: S@njay12345
+      MYSQL_ROOT_PASSWORD: S@njay12345
+    volumes:
+      - realestatebuddy_db_data:/var/lib/mysql
+    restart: unless-stopped
+
+  realestatebuddy-redis:
+    image: redis:7
+    container_name: realestatebuddy_redis
+    restart: unless-stopped
+
+volumes:
+  realestatebuddy_db_data:
+
