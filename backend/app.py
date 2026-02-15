@@ -20,9 +20,9 @@ r = redis.Redis(host=REDIS_HOST, port=6379, decode_responses=True)
 def get_db_connection():
     return mysql.connector.connect(
         host=DB_HOST,
-        user="admin",
-        password="admin123",
-        database="realestate"
+        user="sanjay",
+        password="S@njay12345",
+        database="realestatebuddy"
     )
 
 # Create table
